@@ -1,0 +1,31 @@
+sudo: required
+
+services:
+  - docker
+
+before_install:
+  - docker-compose build
+
+script:
+  #   - docker run rossnerr/access-barrier
+
+  # after_success:
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+  - docker tag airline_tickets_system_app $DOCKER_ID/airline_tickets_system_app
+  - docker tag airline_tickets_system_db $DOCKER_ID/airline_tickets_system_db
+
+  - docker push $DOCKER_ID/airline_tickets_system_app
+  - docker push $DOCKER_ID/airline_tickets_system_db
+
+deploy:
+  provider: elasticbeanstalk
+  region: us-west-2
+  app: ATS
+  env: Ats-env
+  bucket_name: elasticbeanstalk-us-west-2-895923276358
+  bucket_path: ATS
+  on:
+    branch: main
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key: $AWS_SECRET_KEY
